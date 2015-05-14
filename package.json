@@ -1,5 +1,5 @@
 {
-  "name": "grunt-import-bower",
+  "name": "grunt-importbower",
   "version": "0.1.0",
   "description": "Grunt task for importing main files from Bower and inserting them into an HTML document.",
   "files": [
@@ -9,7 +9,7 @@
     "name": "Jason Eberle",
     "email": "eberle.jason@gmail.com"
   },
-  "repository": "jayeb/grunt-import-bower",
+  "repository": "jayeb/grunt-importbower",
   "license": "MIT",
   "keywords": [
     "gruntplugin",
