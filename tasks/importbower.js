@@ -1,6 +1,7 @@
 module.exports = function importBower(grunt) {
-  var wiredep = require('wiredep'),
-      path = require('path');
+  var path = require('path'),
+      _ = require('lodash'),
+      wiredep = require('wiredep');
 
   grunt.registerMultiTask('importbower', function() {
     var options,
@@ -52,21 +53,30 @@ module.exports = function importBower(grunt) {
       grunt.file.copy(file.src, file.dest, {
         process: function processImporter(contents) {
           var fileDir = options.cwd || path.dirname(file.dest),
-              scriptBlock,
-              styleBlock;
+              jsTags,
+              cssTags,
+              jsRegex,
+              cssRegex;
 
-          scriptBlock = _.map(jsFiles, function generateJSTag(libFileDest) {
+          jsTags = _.map(jsFiles, function generateJSTag(libFileDest) {
             var relPath = path.relative(fileDir, libFileDest);
             return options.js_tag.replace('%s', relPath);
-          }).join('\n    ');
+          });
 
-          styleBlock = _.map(cssFiles, function generateCSSTag(libFileDest) {
+          cssTags = _.map(cssFiles, function generateCSSTag(libFileDest) {
             var relPath = path.relative(fileDir, libFileDest);
             return options.css_tag.replace('%s', relPath);
-          }).join('\n    ');
+          });
 
-          contents = contents.replace(options.js_marker, scriptBlock);
-          contents = contents.replace(options.css_marker, styleBlock);
+          jsRegex = new RegExp('([ \\t]*)' + options.js_marker.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+          contents = contents.replace(jsRegex, function(match, whitespace) {
+            return whitespace + jsTags.join('\n' + whitespace);
+          });
+
+          cssRegex = new RegExp('([ \\t]*)' + options.css_marker.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+          contents = contents.replace(cssRegex, function(match, whitespace) {
+            return whitespace + cssTags.join('\n' + whitespace);
+          });
 
           grunt.log.writeln('Imported ' + jsFiles.length + ' JS packages and ' + cssFiles.length + ' CSS packages into '+ file.dest);
 
