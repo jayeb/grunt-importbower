@@ -6,7 +6,7 @@
     "Jason Eberle <eberle.jason@gmail.com>"
   ],
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "bootstrap": "~3.3.4",
     "competent-meyerweb-reset": "~2.0.20110126",
     "lodash": "~3.8.0",
