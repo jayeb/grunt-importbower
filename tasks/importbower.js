@@ -3,82 +3,108 @@ module.exports = function importBower(grunt) {
       _ = require('lodash'),
       wiredep = require('wiredep');
 
-  grunt.registerMultiTask('importbower', function() {
+  grunt.registerMultiTask('importbower', function importBowerTask() {
     var options,
-        deps = wiredep(),
-        jsNames = {},
-        cssNames = {},
-        jsFiles,
-        cssFiles;
+        defaultImportTypeOptions,
+        dependencyData,
+        importNames = {},
+        importFiles = {};
 
+    defaultImportTypeOptions = {
+      css: {
+          dest: 'bower_imports/css',
+          tag: '<link rel="stylesheet" href="%s" />',
+        },
+      js: {
+          dest: 'bower_imports/js',
+          tag: '<script type="text/javascript" src="%s"></script>',
+        }
+    };
 
     // Set default options
     options = this.options({
       path_cwd: null, // When generating relative paths from the src file to the libs, use this cwd
-      css_dest: 'bower_imports/css',
-      css_marker: '<!-- importbower:css -->',
-      css_tag: '<link rel="stylesheet" href="%s" />',
-      js_dest: 'bower_imports/js',
-      js_marker: '<!-- importbower:js -->',
-      js_tag: '<script type="text/javascript" src="%s"></script>'
+      import_types: _.clone(defaultImportTypeOptions), // List the import types you wish to include, in the format above
+      comment_marker: 'importbower',
+      wiredep_options: {}
     });
 
-    _.each(deps.packages, function(package, name) {
-      _.each(package.main, function(file) {
-        if (/\.js$/.test(file)) {
-          jsNames[file] = name;
-        } else if (/\.css$/.test(file)) {
-          cssNames[file] = name;
-        }
+    dependencyData = wiredep(options.wiredep_options);
+
+    _.each(dependencyData.packages, function packageLoop(package, name) {
+      _.each(package.main, function mainfileLoop(src) {
+        _.each(options.import_types, function typeCheckLoop(typeOptions, type) {
+          if (!importNames[type]) {
+            importNames[type] = {};
+          }
+
+          // If this file ends in the type's extension, track its name
+          if (new RegExp('\\.' + (typeOptions.ext || type) + '$').test(src)) {
+            importNames[type][src] = name;
+          }
+        });
       });
     });
 
-    jsFiles = _.map(deps.js, function(src) {
-      var name = jsNames[src],
-          dest = path.normalize(options.js_dest + '/' + name + '.js');
+    _.each(options.import_types, function importTypeLoop(typeOptions, type) {
+      var filesOfType = dependencyData[type];
 
-      grunt.file.copy(src, dest);
-      return dest;
-    });
+      importFiles[type] = _.map(filesOfType, function dependencyLoop(src) {
+        var name = importNames[type][src],
+            dest = path.normalize((typeOptions.dest || defaultImportTypeOptions[type].dest) + '/' + name + '.' + (typeOptions.ext || type));
 
-    cssFiles = _.map(deps.css, function(src) {
-      var name = cssNames[src],
-          dest = path.normalize(options.css_dest + '/' + name + '.css');
+        grunt.file.copy(src, dest);
 
-      grunt.file.copy(src, dest);
-      return dest;
+        return dest;
+      });
     });
 
     _.each(this.files, function importerFileLoop(file) {
       grunt.file.copy(file.src, file.dest, {
         process: function processImporter(contents) {
           var fileDir = options.cwd || path.dirname(file.dest),
-              jsTags,
-              cssTags,
-              jsRegex,
-              cssRegex;
+              logString,
+              typeLogStrings = [];
 
-          jsTags = _.map(jsFiles, function generateJSTag(libFileDest) {
-            var relPath = path.relative(fileDir, libFileDest);
-            return options.js_tag.replace('%s', relPath);
+          _.each(options.import_types, function tagWriterLoop(typeOptions, type) {
+            var tag = typeOptions.tag || defaultImportTypeOptions[type].tag,
+                placeholder = '<!-- ' + options.comment_marker + ':' + type + ' -->',
+                generatedTags,
+                regex;
+
+            if (importFiles[type].length) {
+              generatedTags = _.map(importFiles[type], function generateTag(libFileDest) {
+                var relPath = path.relative(fileDir, libFileDest);
+                return tag.replace('%s', relPath);
+              });
+
+              regex = new RegExp('([ \\t]*)' + placeholder.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+              contents = contents.replace(regex, function regexReplacement(match, whitespace) {
+                return whitespace + generatedTags.join('\n' + whitespace);
+              });
+
+              typeLogStrings.push(generatedTags.length + ' ' + type.toUpperCase() + ' package' + (generatedTags.length === 1 ? '' : 's'));
+            }
           });
 
-          cssTags = _.map(cssFiles, function generateCSSTag(libFileDest) {
-            var relPath = path.relative(fileDir, libFileDest);
-            return options.css_tag.replace('%s', relPath);
-          });
+          if (typeLogStrings.length) {
+            logString = 'Imported ';
 
-          jsRegex = new RegExp('([ \\t]*)' + options.js_marker.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
-          contents = contents.replace(jsRegex, function(match, whitespace) {
-            return whitespace + jsTags.join('\n' + whitespace);
-          });
+            if (typeLogStrings.length === 1) {
+              logString += typeLogStrings[0];
+            } else if (typeLogStrings.length === 2) {
+              logString += typeLogStrings.join(' and ');
+            } else {
+              logString += _.initial(typeLogStrings).join(', ');
+              logString += ', and ' + _.last(typeLogStrings);
+            }
+            logString += ' into ' + file.dest;
 
-          cssRegex = new RegExp('([ \\t]*)' + options.css_marker.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
-          contents = contents.replace(cssRegex, function(match, whitespace) {
-            return whitespace + cssTags.join('\n' + whitespace);
-          });
+          } else {
+            logString = 'Nothing was imported into ' + file.dest;
+          }
 
-          grunt.log.writeln('Imported ' + jsFiles.length + ' JS packages and ' + cssFiles.length + ' CSS packages into '+ file.dest);
+          grunt.log.writeln(logString);
 
           return contents;
         }
