@@ -23,8 +23,22 @@ module.exports = function(grunt) {
     importbower: {
         test: {
             options: {
-                css_dest: '.tmp/css',
-                js_dest: '.tmp/js'
+                import_types: {
+                    css: {
+                        dest: '.tmp/css/libs'
+                      },
+                    js: {
+                        dest: '.tmp/js/libs',
+                        tag: '<script src="%s" async></script>'
+                      },
+                    less: {
+                        dest: '.tmp/less/libs',
+                        tag: '<!-- %s -->'
+                      }
+                  },
+                wiredep_options: {
+                    devDependencies: true
+                  }
               },
             files: {
                 '.tmp/test.html': 'test/test.html'
