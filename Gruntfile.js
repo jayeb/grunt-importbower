@@ -21,7 +21,7 @@ module.exports = function(grunt) {
       },
 
     importbower: {
-        test: {
+        all: {
             options: {
                 import_types: {
                     css: {
@@ -34,6 +34,21 @@ module.exports = function(grunt) {
                     less: {
                         dest: '.tmp/less/libs',
                         tag: '<!-- %s -->'
+                      }
+                  },
+                wiredep_options: {
+                    devDependencies: true
+                  }
+              },
+            files: {
+                '.tmp/test.html': 'test/test.html'
+              }
+          },
+        js: {
+            options: {
+                import_types: {
+                    js: {
+                        dest: '.tmp/js/libs'
                       }
                   },
                 wiredep_options: {
