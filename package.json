@@ -1,19 +1,20 @@
 {
-  "name": "grunt-importbower",
-  "version": "1.0.0",
-  "description": "Grunt task for importing main files from Bower and inserting them into an HTML document.",
+  "name": "grunt-insertbower",
+  "version": "2.0.0",
+  "description": "Grunt task for analyzing the main files from your installed Bower components and inserting them in order into HTML documents.",
   "files": [
-    "tasks/importbower.js"
+    "tasks/insertbower.js"
   ],
   "author": {
     "name": "Jason Eberle",
     "email": "eberle.jason@gmail.com"
   },
-  "repository": "jayeb/grunt-importbower",
+  "repository": "jayeb/grunt-insertbower",
   "license": "MIT",
   "keywords": [
     "gruntplugin",
     "import",
+    "insert",
     "install",
     "bower"
   ],
@@ -37,7 +38,7 @@
     "jscs"
   ],
   "dependencies": {
-    "lodash": "^3.8.0",
-    "wiredep": "^2.2.2"
+    "bowerdeps": "git://github.com/jayeb/bowerdeps.git",
+    "lodash": "^3.8.0"
   }
 }

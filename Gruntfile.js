@@ -1,43 +1,42 @@
 module.exports = function(grunt) {
+  var package = grunt.file.readJSON('package.json');
+
   require('time-grunt')(grunt);
 
   grunt.initConfig({
-    pkg: grunt.file.readJSON('package.json'),
-    name: '<%= pkg.name %>',
+    name: package.name,
 
     jshint: {
-        src: 'tasks/*.js',
+        src: package.files,
         options: {
             jshintrc: '.jshintrc',
             reporter: require('reporter-plus/jshint')
           }
       },
     jscs: {
-        src: 'tasks/*.js',
+        src: package.files,
         options: {
             config: '.jscsrc',
             reporter: require('reporter-plus/jscs').path
           }
       },
 
-    importbower: {
+    insertbower: {
         all: {
             options: {
-                import_types: {
-                    css: {
-                        dest: '.tmp/css/libs'
-                      },
+                types: {
+                    css: true,
                     js: {
-                        dest: '.tmp/js/libs',
                         tag: '<script src="%s" async></script>'
                       },
                     less: {
-                        dest: '.tmp/less/libs',
                         tag: '<!-- %s -->'
                       }
                   },
-                wiredep_options: {
-                    devDependencies: true
+                bowerdepsOptions: {
+                    wiredepOptions: {
+                        devDependencies: true
+                      }
                   }
               },
             files: {
@@ -46,13 +45,14 @@ module.exports = function(grunt) {
           },
         js: {
             options: {
-                import_types: {
-                    js: {
-                        dest: '.tmp/js/libs'
-                      }
+                includeBase: 'scripts',
+                types: {
+                    js: true
                   },
-                wiredep_options: {
-                    devDependencies: true
+                bowerdepsOptions: {
+                    wiredepOptions: {
+                        devDependencies: true
+                      }
                   }
               },
             files: {

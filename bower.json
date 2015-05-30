@@ -1,7 +1,7 @@
 {
-  "name": "grunt-importbower",
-  "version": "1.0.0",
-  "homepage": "https://github.com/jayeb/grunt-importbower",
+  "name": "grunt-insertbower",
+  "version": "2.0.0",
+  "homepage": "https://github.com/jayeb/grunt-insertbower",
   "authors": [
     "Jason Eberle <eberle.jason@gmail.com>"
   ],
