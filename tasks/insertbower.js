@@ -13,17 +13,19 @@ module.exports = function insertBower(grunt) {
     defaultTypeOptions = {
       css: {
           ext: 'css',
-          tag: '<link rel="stylesheet" href="%s" />'
+          tag: '<link rel="stylesheet" href="%s" />',
+          includeBase: null, // When generating relative paths from the src file to the libs, use this cwd
         },
       js: {
           ext: 'js',
-          tag: '<script type="text/javascript" src="%s"></script>'
+          tag: '<script type="text/javascript" src="%s"></script>',
+          includeBase: null, // When generating relative paths from the src file to the libs, use this cwd
         }
     };
 
     // Set default options
     options = this.options({
-      includeBase: null, // When generating relative paths from the src file to the libs, use this cwd
+      includeBase: null,
       types: {
           js: true,
           css: true
@@ -62,12 +64,14 @@ module.exports = function insertBower(grunt) {
               generatedTags = _.chain(libs[type]).map(function processLibFiles(lib) {
                 return _.map(lib.files, function generateTag(libFile) {
                   var fileName = path.basename(libFile),
-                      filePath;
+                      filePath = fileName;
+
+                  if (typeOptions.includeBase) {
+                    filePath = path.join(typeOptions.includeBase, filePath);
+                  }
 
                   if (options.includeBase) {
-                    filePath = path.join(options.includeBase, fileName);
-                  } else {
-                    filePath = fileName;
+                    filePath = path.join(options.includeBase, filePath);
                   }
 
                   return typeOptions.tag.replace('%s', filePath);

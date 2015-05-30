@@ -24,9 +24,11 @@ module.exports = function(grunt) {
     insertbower: {
         all: {
             options: {
+                includeBase: 'libs',
                 types: {
                     css: true,
                     js: {
+                        includeBase: 'js',
                         tag: '<script src="%s" async></script>'
                       },
                     less: {
@@ -45,9 +47,10 @@ module.exports = function(grunt) {
           },
         js: {
             options: {
-                includeBase: 'scripts',
                 types: {
-                    js: true
+                    js: {
+                        includeBase: 'scripts'
+                      }
                   },
                 bowerdepsOptions: {
                     wiredepOptions: {
