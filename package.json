@@ -1,6 +1,6 @@
 {
   "name": "grunt-insertbower",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Grunt task for analyzing the main files from your installed Bower components and inserting them in order into HTML documents.",
   "files": [
     "tasks/insertbower.js"
